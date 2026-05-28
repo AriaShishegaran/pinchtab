@@ -12,6 +12,7 @@ import (
 	"github.com/pinchtab/pinchtab/internal/autosolver/external"
 	autosolversemantic "github.com/pinchtab/pinchtab/internal/autosolver/semantic"
 	autosolvers "github.com/pinchtab/pinchtab/internal/autosolver/solvers"
+	"github.com/pinchtab/pinchtab/internal/autosolver/vision"
 )
 
 const (
@@ -240,6 +241,14 @@ func (h *Handlers) buildAutoSolver(cfg coreautosolver.Config, includeSemantic bo
 	as.Registry().MustRegister(&autosolvers.JSChallenge{})
 
 	if h != nil && h.Config != nil {
+		// Vision-LLM image-grid solvers (hCaptcha / reCAPTCHA v2). These drive the
+		// visible challenge to completion using a vision model — the in-page
+		// success then lets the host site finish its own flow. Registered only
+		// when a vision transport is configured (CLI passthrough or API key).
+		if vm := h.buildVisionModel(); vm != nil {
+			as.Registry().MustRegister(&autosolvers.HCaptcha{Vision: vm, MaxRounds: cfg.MaxAttempts})
+			as.Registry().MustRegister(&autosolvers.ReCaptcha{Vision: vm, MaxRounds: cfg.MaxAttempts})
+		}
 		if key := strings.TrimSpace(h.Config.AutoSolver.CapsolverKey); key != "" {
 			as.Registry().MustRegister(external.NewCapsolver(external.CapsolverConfig{APIKey: key}))
 		}
@@ -251,12 +260,49 @@ func (h *Handlers) buildAutoSolver(cfg coreautosolver.Config, includeSemantic bo
 	return as
 }
 
+// visionConfigured reports whether a vision transport (CLI passthrough or API
+// key) has been configured for the image-grid solvers.
+func (h *Handlers) visionConfigured() bool {
+	if h == nil || h.Config == nil {
+		return false
+	}
+	as := h.Config.AutoSolver
+	return strings.TrimSpace(as.LLMProvider) != "" ||
+		strings.TrimSpace(as.LLMCommand) != "" ||
+		strings.TrimSpace(as.LLMAPIKey) != ""
+}
+
+// buildVisionModel constructs the vision model from autosolver config, or nil
+// when vision is not configured / not usable (logged, non-fatal).
+func (h *Handlers) buildVisionModel() vision.Model {
+	if !h.visionConfigured() {
+		return nil
+	}
+	as := h.Config.AutoSolver
+	vm, err := vision.New(vision.Config{
+		Provider: as.LLMProvider,
+		Model:    as.LLMModel,
+		APIKey:   as.LLMAPIKey,
+		Command:  as.LLMCommand,
+	})
+	if err != nil {
+		slog.Warn("autosolver: vision model unavailable", "error", err)
+		return nil
+	}
+	slog.Info("autosolver: vision model ready", "model", vm.Name())
+	return vm
+}
+
 func (h *Handlers) availableAutoSolverNames() []string {
 	cfg := h.normalizedAutoSolverConfig()
 	available := map[string]bool{
 		"cloudflare":  true,
 		"semantic":    true,
 		"jschallenge": true,
+	}
+	if h.visionConfigured() {
+		available["hcaptcha"] = true
+		available["recaptcha"] = true
 	}
 	if h != nil && h.Config != nil {
 		if strings.TrimSpace(h.Config.AutoSolver.CapsolverKey) != "" {
@@ -280,7 +326,7 @@ func (h *Handlers) availableAutoSolverNames() []string {
 		seen[configured] = struct{}{}
 	}
 
-	for _, fallback := range []string{"cloudflare", "semantic", "jschallenge", "capsolver", "twocaptcha"} {
+	for _, fallback := range []string{"cloudflare", "semantic", "jschallenge", "hcaptcha", "recaptcha", "capsolver", "twocaptcha"} {
 		if !available[fallback] {
 			continue
 		}
