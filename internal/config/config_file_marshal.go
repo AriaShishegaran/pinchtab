@@ -199,10 +199,13 @@ func (fc FileConfig) MarshalJSON() ([]byte, error) {
 			RetryMaxDelayMs:   fc.AutoSolver.RetryMaxDelayMs,
 			Solvers:           copyStringSlice(fc.AutoSolver.Solvers),
 			LLMProvider:       fc.AutoSolver.LLMProvider,
+			LLMModel:          fc.AutoSolver.LLMModel,
+			LLMCommand:        fc.AutoSolver.LLMCommand,
 			LLMFallback:       fc.AutoSolver.LLMFallback,
 			External: autoSolverExtConfigJSON{
 				CapsolverKey:  fc.AutoSolver.External.CapsolverKey,
 				TwoCaptchaKey: fc.AutoSolver.External.TwoCaptchaKey,
+				LLMAPIKey:     fc.AutoSolver.External.LLMAPIKey,
 			},
 			Credentials: autoSolverCredentialsConfigJSON{
 				Login: autoSolverLoginConfigJSON{
@@ -439,10 +442,13 @@ func FileConfigFromRuntime(cfg *RuntimeConfig) FileConfig {
 			RetryMaxDelayMs:   &autoSolverRetryMaxDelayMs,
 			Solvers:           copyStringSlice(cfg.AutoSolver.Solvers),
 			LLMProvider:       cfg.AutoSolver.LLMProvider,
+			LLMModel:          cfg.AutoSolver.LLMModel,
+			LLMCommand:        cfg.AutoSolver.LLMCommand,
 			LLMFallback:       &autoSolverLLMFallback,
 			External: AutoSolverExtConf{
 				CapsolverKey:  cfg.AutoSolver.CapsolverKey,
 				TwoCaptchaKey: cfg.AutoSolver.TwoCaptchaKey,
+				LLMAPIKey:     cfg.AutoSolver.LLMAPIKey,
 			},
 			Credentials: AutoSolverCredentialsConf{
 				Login: AutoSolverLoginConf{

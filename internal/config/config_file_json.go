@@ -181,6 +181,8 @@ type autoSolverFileConfigJSON struct {
 	RetryMaxDelayMs   *int                            `json:"retryMaxDelayMs,omitempty"`
 	Solvers           []string                        `json:"solvers,omitempty"`
 	LLMProvider       string                          `json:"llmProvider,omitempty"`
+	LLMModel          string                          `json:"llmModel,omitempty"`
+	LLMCommand        string                          `json:"llmCommand,omitempty"`
 	LLMFallback       *bool                           `json:"llmFallback,omitempty"`
 	External          autoSolverExtConfigJSON         `json:"external,omitempty"`
 	Credentials       autoSolverCredentialsConfigJSON `json:"credentials,omitempty"`
@@ -189,6 +191,7 @@ type autoSolverFileConfigJSON struct {
 type autoSolverExtConfigJSON struct {
 	CapsolverKey  string `json:"capsolverKey,omitempty"`
 	TwoCaptchaKey string `json:"twoCaptchaKey,omitempty"`
+	LLMAPIKey     string `json:"llmApiKey,omitempty"`
 }
 
 type autoSolverCredentialsConfigJSON struct {

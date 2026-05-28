@@ -186,7 +186,10 @@ type AutoSolverConfig struct {
 	RetryBaseDelayMs  int      `json:"retryBaseDelayMs,omitempty"`
 	RetryMaxDelayMs   int      `json:"retryMaxDelayMs,omitempty"`
 	Solvers           []string `json:"solvers,omitempty"`     // Ordered solver names
-	LLMProvider       string   `json:"llmProvider,omitempty"` // "openai", "anthropic", etc.
+	LLMProvider       string   `json:"llmProvider,omitempty"` // "cli" (default), "anthropic", "openai"
+	LLMModel          string   `json:"llmModel,omitempty"`    // vision model name (optional)
+	LLMCommand        string   `json:"llmCommand,omitempty"`  // CLI passthrough binary (default "claude")
+	LLMAPIKey         string   `json:"-"`                     // optional; enables API vision transport
 	LLMFallback       bool     `json:"llmFallback,omitempty"` // Enable LLM as last resort
 	CapsolverKey      string   `json:"capsolverKey,omitempty"`
 	TwoCaptchaKey     string   `json:"twoCaptchaKey,omitempty"`
@@ -434,15 +437,18 @@ type AutoSolverFileConfig struct {
 	RetryMaxDelayMs   *int                      `json:"retryMaxDelayMs,omitempty"`
 	Solvers           []string                  `json:"solvers,omitempty"`
 	LLMProvider       string                    `json:"llmProvider,omitempty"`
+	LLMModel          string                    `json:"llmModel,omitempty"`
+	LLMCommand        string                    `json:"llmCommand,omitempty"`
 	LLMFallback       *bool                     `json:"llmFallback,omitempty"`
 	External          AutoSolverExtConf         `json:"external,omitempty"`
 	Credentials       AutoSolverCredentialsConf `json:"credentials,omitempty"`
 }
 
-// AutoSolverExtConf holds external solver API keys.
+// AutoSolverExtConf holds external solver + vision-LLM API keys.
 type AutoSolverExtConf struct {
 	CapsolverKey  string `json:"capsolverKey,omitempty"`
 	TwoCaptchaKey string `json:"twoCaptchaKey,omitempty"`
+	LLMAPIKey     string `json:"llmApiKey,omitempty"`
 }
 
 // AutoSolverCredentialsConf is the persisted form of the credentials block.

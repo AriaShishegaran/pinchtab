@@ -609,11 +609,18 @@ func applyFileConfig(cfg *RuntimeConfig, fc *FileConfig) {
 	if fc.AutoSolver.LLMProvider != "" {
 		cfg.AutoSolver.LLMProvider = fc.AutoSolver.LLMProvider
 	}
+	if fc.AutoSolver.LLMModel != "" {
+		cfg.AutoSolver.LLMModel = fc.AutoSolver.LLMModel
+	}
+	if fc.AutoSolver.LLMCommand != "" {
+		cfg.AutoSolver.LLMCommand = fc.AutoSolver.LLMCommand
+	}
 	if fc.AutoSolver.LLMFallback != nil {
 		cfg.AutoSolver.LLMFallback = *fc.AutoSolver.LLMFallback
 	}
 	cfg.AutoSolver.CapsolverKey = fc.AutoSolver.External.CapsolverKey
 	cfg.AutoSolver.TwoCaptchaKey = fc.AutoSolver.External.TwoCaptchaKey
+	cfg.AutoSolver.LLMAPIKey = fc.AutoSolver.External.LLMAPIKey
 	cfg.AutoSolver.Credentials = AutoSolverCredentials{
 		Login: AutoSolverLoginCreds{
 			User:     fc.AutoSolver.Credentials.Login.User,
